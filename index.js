@@ -7,19 +7,16 @@ dotenv.config()
 
 const cors = require ('cors')
 app.use(cors())
-const jwt = require ('jsonwebtoken')
-// const cloudinary = require ('cloudinary') 
-// const { checkJWT } = require('./middleware/jwtMiddleware')
-app.use(express.json({limit:"50mb"}))
+
+
+// app.use(express.json({limit:"50mb"}))
 require ('./connection/mongoose.connection')
 let studentRouter = require('./routes/student.route')
-// let staffRouter = require('./routes/staff.route')
+
 
 app.use('/student', studentRouter)
-// app.use('staff', staffRouter)
 
-
-userModel = require ('./models/user.model')
+// userModel = require ('./models/user.model')
 
 
 

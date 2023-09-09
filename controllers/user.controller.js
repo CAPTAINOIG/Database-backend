@@ -3,6 +3,17 @@ const jwt = require("jsonwebtoken")
 const cloudinary  = require ("cloudinary")
 
 
+const ally = (req,res)=>{ 
+     let form = userModel.find()
+    .then((result)=>{
+        console.log(result);
+        res.send({status: true, message:"user signed up successfully", result})
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+}
+
 const registerUser = (req,res)=>{
     let form = new userModel(req.body)
         form.save()
@@ -89,4 +100,4 @@ const uploadFile = (req,res)=>{
     
   
 
-module.exports = {registerUser, userLogin, getDashboard, uploadFile}
+module.exports = {registerUser, userLogin, getDashboard, uploadFile, ally}

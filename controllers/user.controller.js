@@ -1,5 +1,6 @@
 let userModel = require('../models/user.model')
 const jwt = require("jsonwebtoken")
+const cloudinary  = require ("cloudinary")
 
 
 const registerUser = (req,res)=>{
@@ -69,8 +70,23 @@ const getDashboard =  (req, res)=>{
     })
 }
 
+const uploadFile = (req,res)=>{
+    let image = req.body.fileUpload
+    cloudinary.v2.uploader.upload(image,(error,result)=>{
+    })
+    .then((response)=>{
+     let myimage= response.secure_url
+      res.send({message:"image uploaded successfully", statue:true, myimage})
+    
+   }).catch((err)=>{
+    console.log(err);
+   })
+  
+}
+
+
 
     
   
 
-module.exports = {registerUser, userLogin, getDashboard}
+module.exports = {registerUser, userLogin, getDashboard, uploadFile}

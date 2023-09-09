@@ -7,6 +7,8 @@ let newSchema = new mongoose.Schema({
     email: {type:String, required:true, unique:true},
     password: {type:String, required:true},
     phone: {type:String,required:true},
+    dob: {type: String, required:true},
+    matric: {type:String, required:true},
     date: {type: Date, default: Date.now()} 
 })
 
@@ -40,7 +42,7 @@ newSchema.methods.validatePassword = function(password, callback){
         }
     })
 }
-let userModel = mongoose.model("Hall", newSchema)
+let userModel = mongoose.model("halls", newSchema)
 
 
 module.exports = userModel

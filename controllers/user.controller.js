@@ -128,6 +128,36 @@ const profile = ((req, res)=>{
     })
 })
 
+// const socketio = (req,res) =>{
+//     let updateSocket = new socketModel(req.body)
+//     updateSocket.save()
+//     .then((response) =>{
+//         console.log(response);
+//         let socketClient = require ("socket.io")
+//         let io = socketClient(connection, {
+//             cors: {origin: "*"}
+//         })
+//         io.on("connection", (socket)=>{
+//             console.log(socket.id);
+//             // console.log("A user connected successfully");
+//       socket.on("sendMsg", (message)=>{
+//         console.log(message);
+//         io.emit("broadcastMsg", message)
+//       })
+      
+    
+      
+//       socket.on("disconnect", ()=>{
+//           // console.log("A user disconnected");
+          
+//         })
+//     })
+// })
+// .catch((err)=>{
+//     console.log(err);
+// })
+// }
+
 
 
 

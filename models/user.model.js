@@ -9,6 +9,7 @@ let newSchema = new mongoose.Schema({
     phone: {type:String,required:true},
     dob: {type: String, required:true},
     matric: {type:String, required:true},
+    image: {type:String},
     date: {type: Date, default: Date.now()} 
 })
 

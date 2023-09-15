@@ -34,39 +34,26 @@ app.get ("/", (req,res)=>{
 })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.listen("2300", ()=>{
+let connection = app.listen("2300", ()=>{
     console.log("connected");
+})
+
+let socketClient = require ("socket.io")
+let io = socketClient(connection, {
+  cors: {origin: "*"}
+})
+io.on("connection", (socket)=>{
+  console.log(socket.id);
+  // console.log("A user connected successfully");
+  socket.on("sendMsg", (message)=>{
+    console.log(message);
+    io.emit("broadcastMsg", message)
+  })
+
+
+
+  socket.on("disconnect", ()=>{
+    // console.log("A user disconnected");
+
+  })
 })

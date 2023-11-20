@@ -1,21 +1,27 @@
-const express = require ('express')
-const app = express ()
-const bodyParser = require ('body-parser')
-app.use (bodyParser.urlencoded({extended:true, limit:"50mb"}))
-const dotenv = require ('dotenv')
-dotenv.config()
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
 const cloudinary = require ('cloudinary')
-const cors = require ('cors')
-app.use(cors())
+const dotenv = require('dotenv');
+const cors = require('cors');
+// const mongoose = require('mongoose'); // Include Mongoose
+
+// Load environment variables
+dotenv.config();
+
+// Middleware setup
+app.use(cors());
+app.use(express.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use(express.json({limit:"50mb"}))
-require ('./connection/mongoose.connection')
-let studentRouter = require('./routes/student.route')
+  require('./connection/mongoose.connection')
 
+// Router setup
+let userRouter = require("./routes/student.route");
+app.use("/student", userRouter);
 
-app.use('/student', studentRouter)
-
+// Model setup
 userModel = require ('./models/user.model')
 
 

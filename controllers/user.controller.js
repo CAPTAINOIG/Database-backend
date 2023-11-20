@@ -17,51 +17,50 @@ const ally = (req, res) => {
 }
 
 const registerUser = (req, res) => {
-    let form = new userModel(req.body)
+    let form = new userModel(req.body);
     form.save()
-        .then((result) => {
-            console.log(result);
-            res.send({ status: true, message: "user signed up successfully", result })
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+      .then((result) => {
+        console.log(result);
+        res.status(200).json({ status: true, message: "User signed up successfully", result });
+      })
+      .catch((err) => {
+        console.error(err);
+        if (err.code === 11000) {
+          res.status(409).json({ status: false, message: "Duplicate user found" });
+        } else {
+          res.status(400).json({ status: false, message: "Fill in appropriately" });
+        }
+      });
 }
 
 const userLogin = async (req, res) => {
     console.log(req.body);
-    let { password, email } = req.body
-    userModel.findOne({ email: req.body.email })
-        .then((user) => {
-            if (user) {
-                // res.send({message:"email exist", status:true})
-                user.validatePassword(password, (err, same) => {
-                    // res.send({message:"email exist", status:true})
-                    if (err) {
-                        res.send({ message: "server error", status: false })
-                    }
-                    else {
-                        if (same) {
-                            let token = jwt.sign({ email }, "secrete", { expiresIn: "10h" })
-                            console.log(token);
-                            res.send({ message: "User Signed in Successfully", status: true, token })
-                        } else {
-                            res.send({ message: "Wrong password", status: false })
-                        }
-                    }
-                })
+    const { password, email } = req.body;
+    try {
+      const user = await userModel.findOne({ email });
+  
+      if (user) {
+        const secrete = process.env.SECRET;
+        user.validatePassword(password, (err, same) => {
+          if (err) {
+            res.status(500).json({ message: "Server error", status: false });
+          } else {
+            if (same) {
+              const token = jwt.sign({ email }, secrete, { expiresIn: "10h" });
+              console.log(token);
+              res.json({ message: "User signed in successfully", status: true, token, user });
             } else {
-                res.send({ message: "wrong email", status: false })
-
+              res.status(401).json({ message: "Wrong password, please type the correct password", status: false });
             }
-        })
-        .catch((err) = {
-            if(err) {
-                res.send({ message: "server error", status: false })
-                console.log(err);
-
-            }
-        })
+          }
+        });
+      } else {
+        res.status(404).json({ message: "Wrong email, please type the correct email", status: false });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error", status: false });
+    }
 }
 
 const getDashboard = (req, res) => {
@@ -81,6 +80,8 @@ const getDashboard = (req, res) => {
         }
     })
 }
+
+
 
 const uploadFile = (req, res) => {
     let image = req.body.fileUpload

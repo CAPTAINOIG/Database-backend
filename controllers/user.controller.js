@@ -48,7 +48,7 @@ const userLogin = async (req, res) => {
             if (same) {
               const token = jwt.sign({ email }, secrete, { expiresIn: "10h" });
               console.log(token);
-              res.json({ message: "User signed in successfully", status: true, token, user });
+              res.status(200).json({ message: "User signed in successfully", status: true, token, user });
             } else {
               res.status(401).json({ message: "Wrong password, please type the correct password", status: false });
             }
@@ -65,16 +65,20 @@ const userLogin = async (req, res) => {
 
 const getDashboard = (req, res) => {
     let token = (req.headers.authorization.split(" ")[1]);
-    jwt.verify(token, "secrete", (err, result) => {
+    const secrete = process.env.SECRET;
+    jwt.verify(token, secrete, (err, result) => {
+      
         if (err) {
             console.log(err);
             res.send({ message: "Error Occured", status: false })
 
-        } else {
+        } 
+        
+        else {
             userModel.findOne({ email: result.email })
                 .then((userDetail) => {
+                  console.log(userDetail);
                     res.send({ message: "Congratulations", status: true, userDetail })
-                    console.log(result);
 
                 })
         }

@@ -71,7 +71,6 @@ const getDashboard = (req, res) => {
         if (err) {
             console.log(err);
             res.send({ message: "Error Occured", status: false })
-
         } 
         
         else {

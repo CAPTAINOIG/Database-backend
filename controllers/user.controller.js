@@ -2,7 +2,30 @@ let userModel = require('../models/user.model')
 const jwt = require("jsonwebtoken")
 const cloudinary = require("cloudinary")
 const { response } = require('express')
+const nodemailer = require('nodemailer');
+const bcryptjs = require('bcryptjs');
+const dotenv = require('dotenv')
+dotenv.config()
+
 const help = require('../models/help')
+
+
+
+const pass = process.env.PASS;
+const USERMAIL = process.env.USERMAIL;
+const tokenStorage = new Map();
+
+function generating() {
+  return Math.floor(1000 + Math.random() * 9000)
+}
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: USERMAIL,
+    pass: pass
+  }
+})
 
 
 const ally = (req, res) => {
@@ -18,6 +41,8 @@ const ally = (req, res) => {
 
 const registerUser = (req, res) => {
     let form = new userModel(req.body);
+    // const {firstName, lastName, email, password, phone, matric, dob,  image, logo,} = req.body
+    // console.log(user);
     form.save()
       .then((result) => {
         console.log(result);
@@ -132,38 +157,90 @@ const profile = ((req, res)=>{
     })
 })
 
-// const socketio = (req,res) =>{
-//     let updateSocket = new socketModel(req.body)
-//     updateSocket.save()
-//     .then((response) =>{
-//         console.log(response);
-//         let socketClient = require ("socket.io")
-//         let io = socketClient(connection, {
-//             cors: {origin: "*"}
-//         })
-//         io.on("connection", (socket)=>{
-//             console.log(socket.id);
-//             // console.log("A user connected successfully");
-//       socket.on("sendMsg", (message)=>{
-//         console.log(message);
-//         io.emit("broadcastMsg", message)
-//       })
-      
-    
-      
-//       socket.on("disconnect", ()=>{
-//           // console.log("A user disconnected");
-          
-//         })
-//     })
-// })
-// .catch((err)=>{
-//     console.log(err);
-// })
-// }
+
+
+const password = (req, res) => {
+  const { email } = req.body;
+  const resetToken = generating();
+  const expirationDate = new Date();
+  expirationDate.setHours(expirationDate.getHours() + 24); // Token expires in 24 hours
+
+  tokenStorage.set(resetToken, { email, expires: expirationDate, pin: generating() });
+  console.log(email);
+
+  userModel.findOne({ email })
+    .then((User) => {
+      if (User === null) {
+        console.log('user not found', email);
+        res.status(500).json({ message: '❌ User not found', status: false })
+      } else {
+        console.log('✔ user found', email);
+        const mailOptions = {
+          from: USERMAIL,
+          to: email,
+          subject: 'Your OTP Code',
+          text: `Your 4-digit PIN code is: ${resetToken}`,
+          // html:,
+        };
+        return transporter.sendMail(mailOptions)
+          .then((emailResult) => {
+            console.log(emailResult);
+            userModel.updateOne({ email }, { $set: { otp: resetToken } })
+              .then(result => {
+                console.log(result);
+                res.status(200).json({ message: 'Email sent successful', status: true });
+              }).catch(() => {
+                res.status(500).json({ message: 'Error occur while updating Model', status: false });
+              });
+            // res.status(200).json({ message: 'Email sent successful' });
+          }).catch((error) => {
+            console.log(error);
+            res.status(500).json({ message: 'Error occur while sending email', status: false });
+          });
+      }
+    }).catch((err) => {
+      console.log(err);
+      console.error('Error in sendResetEmail:', err);
+      res.status(500).json({ message: '❌ Internal server error', status: false });
+    });
+
+}
 
 
 
 
+const resetPassword = (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ message: 'Missing required data' });
+    console.log('missig data');
+  }
+  console.log(email, otp, newPassword);
 
-module.exports = { registerUser, userLogin, getDashboard, uploadFile, ally, profile, userHelp}
+  userModel.findOne({ email, otp })
+    .then(async (user) => {
+      if (!user) {
+        return res.status(500).json({ message: 'User not found' });
+      }
+      console.log('is ok');
+      const hashPassword = await bcryptjs.hash(newPassword, 10);
+      userModel.updateOne({ _id: user._id }, { password: hashPassword })
+        .then(user => {
+          res.status(200).json({ message: 'Password reset successful' });
+          console.log('Password reset successful');
+        }).catch((error) => {
+          res.status(500).json({ message: 'Internal server error' });
+          console.log('internal server error');
+        })
+
+
+    }).catch((error) => {
+      console.log(error);
+    })
+}
+
+
+
+
+module.exports = { registerUser, userLogin, getDashboard, uploadFile, ally, profile, userHelp, password, resetPassword}

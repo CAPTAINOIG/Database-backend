@@ -20,6 +20,7 @@ function generating() {
 }
 
 const transporter = nodemailer.createTransport({
+  // host: 'smtp.example.com',
   service: 'gmail',
   auth: {
     user: USERMAIL,
@@ -29,131 +30,257 @@ const transporter = nodemailer.createTransport({
 
 
 const ally = (req, res) => {
-    let form = userModel.find()
-        .then((result) => {
-            console.log(result);
-            res.send({ status: true, message: "user signed up successfully", result })
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+  let form = userModel.find()
+    .then((result) => {
+      console.log(result);
+      res.send({ status: true, message: "user signed up successfully", result })
+    })
+    .catch((err) => {
+      console.log(err);
+    })
 }
 
 const registerUser = (req, res) => {
-    let form = new userModel(req.body);
-    // const {firstName, lastName, email, password, phone, matric, dob,  image, logo,} = req.body
-    // console.log(user);
-    form.save()
-      .then((result) => {
-        console.log(result);
-        res.status(200).json({ status: true, message: "User signed up successfully", result });
-      })
-      .catch((err) => {
-        console.error(err);
-        if (err.code === 11000) {
-          res.status(409).json({ status: false, message: "Duplicate user found" });
-        } else {
-          res.status(400).json({ status: false, message: "Fill in appropriately" });
-        }
-      });
+
+  let form = new userModel(req.body);
+  const { firstName, lastName, email, password, phone, matric, dob, image, logo } = req.body;
+  const newUser = new userModel({
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    matric,
+    dob,
+    image,
+    logo
+  })
+  // console.log(user);
+  newUser.save()
+    .then((result) => {
+      console.log(result);
+      res.status(200).json({ status: true, message: "User signed up successfully", result });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.code === 11000) {
+        res.status(409).json({ status: false, message: "Duplicate user found" });
+      } else {
+        res.status(400).json({ status: false, message: "Fill in appropriately" });
+      }
+    });
 }
 
 const userLogin = async (req, res) => {
-    console.log(req.body);
-    const { password, email } = req.body;
-    try {
-      const user = await userModel.findOne({ email });
-  
-      if (user) {
-        const secrete = process.env.SECRET;
-        user.validatePassword(password, (err, same) => {
-          if (err) {
-            res.status(500).json({ message: "Server error", status: false });
+  console.log(req.body);
+  const { password, email } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (user) {
+      const secrete = process.env.SECRET;
+      user.validatePassword(password, (err, same) => {
+        if (err) {
+          res.status(500).json({ message: "Server error", status: false });
+        } else {
+          if (same) {
+            const token = jwt.sign({ email }, secrete, { expiresIn: "10h" });
+            console.log(token);
+            res.status(200).json({ message: "User signed in successfully", status: true, token, user });
           } else {
-            if (same) {
-              const token = jwt.sign({ email }, secrete, { expiresIn: "10h" });
-              console.log(token);
-              res.status(200).json({ message: "User signed in successfully", status: true, token, user });
-            } else {
-              res.status(401).json({ message: "Wrong password, please type the correct password", status: false });
-            }
+            res.status(401).json({ message: "Wrong password, please type the correct password", status: false });
           }
-        });
-      } else {
-        res.status(404).json({ message: "Wrong email, please type the correct email", status: false });
-      }
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error", status: false });
+        }
+      });
+    } else {
+      res.status(404).json({ message: "Wrong email, please type the correct email", status: false });
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error", status: false });
+  }
 }
 
 const getDashboard = (req, res) => {
-    let token = (req.headers.authorization.split(" ")[1]);
-    const secrete = process.env.SECRET;
-    jwt.verify(token, secrete, (err, result) => {
-      
-        if (err) {
-            console.log(err);
-            res.send({ message: "Error Occured", status: false })
-        } 
-        
-        else {
-            userModel.findOne({ email: result.email })
-                .then((userDetail) => {
-                  console.log(userDetail);
-                    res.send({ message: "Congratulations", status: true, userDetail })
+  let token = (req.headers.authorization.split(" ")[1]);
+  const secrete = process.env.SECRET;
+  jwt.verify(token, secrete, (err, result) => {
 
-                })
-        }
-    })
-}
+    if (err) {
+      console.log(err);
+      res.send({ message: "Error Occured", status: false })
+    }
 
+    else {
+      userModel.findOne({ email: result.email })
+        .then((userDetail) => {
+          console.log(userDetail);
+          res.send({ message: "Congratulations", status: true, userDetail })
 
-
-const uploadFile = (req, res) => {
-    let image = req.body.fileUpload
-    cloudinary.v2.uploader.upload(image, (error, result) => {
-    })
-        .then((response) => {
-            let myimage = response.secure_url
-            userModel.findByIdAndUpdate(req.body.id, { $set: { image: req.body.myimage, status: true } })
-                .then((response) => {
-                    console.log(response);
-                    res.send({ message: "image uploaded successfully", statue: true, myimage })
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-
-        }).catch((err) => {
-            console.log(err);
         })
-
+    }
+  })
 }
 
 
-const userHelp = (req,res)=>{
-    let formy = new help(req.body)
-    formy.save()
-    .then((response)=>{
-        console.log(response);
-        res.send({status:true, message: "Crash Reported Successfully", response})
+
+const uploadFile = async (req, res) => {
+  try {
+      const { id, fileUpload } = req.body;
+      // console.log(fileUpload);
+      const uploadResult = await cloudinary.v2.uploader.upload(fileUpload);
+      // console.log(uploadResult);
+
+      await userModel.findOneAndUpdate({_id: id }, { $set: { image: uploadResult.secure_url } });
+
+      console.log("Profile picture uploaded successfully.");
+      res.status(200).json({
+          message: "uploaded successfully.",
+          status: true,
+          uploadResult
+          });
+  } catch (error) {
+      // console.error("Error uploading picture");
+      res.status(500).json({ 
+          error: "An error occurred while processing the request.",
+          status: false
+      });
+  }
+};
+
+
+
+// const uploadFile = async (req, res) => {
+//   const { email, fileUpload } = req.body
+//   // await userModel.deleteOne({email})
+//   // await userModel.findOne({email})
+//   // console.log(fileUpload);
+//   // .then(msg =>{
+//   console.log(email);
+//   // }).catch(err =>{
+//   //   console.log(err);
+//   // })
+
+
+//   cloudinary.v2.uploader.upload(fileUpload)
+//     .then((response) => {
+//       // Code to handle successful Cloudinary upload
+//       let myimage = response.secure_url;
+//       console.log(myimage);
+
+    //   userModel.findOneAndUpdate({ email }, { $set: { image: myimage } })
+    //     .then((updatedUser) => {
+    //       // Code to handle successful update of user model
+    //       console.log(updatedUser);
+    //       // Send a response to the client if needed
+    //       res.status(200).json({
+    //         status: true,
+    //         response: updatedUser,
+    //         message: 'Image uploaded successfully'
+    //       });
+    //     }).catch((err) => {
+    //       // Code to handle Cloudinary upload or update error
+    //       console.log(err);
+    //       console.log('Error in Cloudinary upload or user model update');
+    //       // Send an error response to the client if needed
+    //       res.status(500).json({
+    //         status: false,
+    //         message: 'Error in Cloudinary upload or user model update',
+    //         error: err.message
+    //       });
+    //     });
+    // }).catch((err) => {
+    //   // Code to handle Cloudinary upload or update error
+    //   console.log(err);
+    //   console.log('Error in Cloudinary upload or user model update');
+    //   // Send an error response to the client if needed
+    //   res.status(500).json({
+    //     status: false,
+    //     message: 'Error in Cloudinary upload or user model update',
+    //     error: err.message
+    //   });
+    // });
+
+
+
+  // cloudinary.v2.uploader.upload(fileUpload, (err, response) => { })
+  //   .then((response) => {
+  //     // console.log(response);
+  //     let myimage = response.secure_url;
+  //     console.log(myimage);
+
+  //     userModel.findOneAndUpdate({ email }, { $set: { image: myimage} })
+  //       .then((response) => {
+  //         console.log(response);
+  //         // res.status(200).json({
+  //         //   status: true,
+  //         //   response: updatedUser,
+  //         //   message: 'image uploaded successfully'
+  //         // })
+  //         // res.send({ message: "image uploaded successfully", statue: true, myimage })
+  //       })
+  //       .catch((err) => {
+  //         // console.log(err);
+  //         console.log('cant update');
+  //       })
+
+  //   }).catch((err) => {
+  //     // console.log(err);
+  //     console.log('error');
+  //   })
+
+// }
+
+
+
+// const uploadFile = (req, res) => {
+//   const image = req.body.fileUpload;
+
+//   cloudinary.v2.uploader.upload(image)
+//     .then((response) => {
+//       const myimage = response.secure_url;
+
+//       // Assuming req.body.id is a valid MongoDB ObjectId
+//       userModel.findByIdAndUpdate(req.body.id, { $set: { image: myimage, status: true } }, { new: true })
+//         .then((updatedUser) => {
+//           if (!updatedUser) {
+//             return res.status(404).json({ message: "User not found", status: false });
+//           }
+//           res.status(200).json({ message: "Image uploaded successfully", status: true, myimage, updatedUser });
+//         })
+//         .catch((err) => {
+//           console.log(err);
+//           res.status(500).json({ message: "Error updating user", status: false });
+//         });
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//       res.status(500).json({ message: "Error uploading image to Cloudinary", status: false });
+//     });
+// };
+
+
+const userHelp = (req, res) => {
+  let formy = new help(req.body)
+  formy.save()
+    .then((response) => {
+      console.log(response);
+      res.send({ status: true, message: "Crash Reported Successfully", response })
     })
-    .catch((err)=>{
-        console.log(err);
+    .catch((err) => {
+      console.log(err);
     })
 
 }
 
-const profile = ((req, res)=>{
-    userModel.find()
-    .then((response)=>{
-        console.log(response);
-        res.send({ status: true, message: "user signed up successfully", response })
+const profile = ((req, res) => {
+  userModel.find()
+    .then((response) => {
+      console.log(response);
+      res.send({ status: true, message: "user signed up successfully", response })
     })
-    .catch((err)=>{
-        console.log(err);
+    .catch((err) => {
+      console.log(err);
     })
 })
 
@@ -211,7 +338,7 @@ const password = (req, res) => {
 
 const resetPassword = (req, res) => {
   const { email, otp, newPassword } = req.body;
-  
+
   if (!email || !otp || !newPassword) {
     return res.status(400).json({ message: 'Missing required data' });
     console.log('missig data');
@@ -243,4 +370,4 @@ const resetPassword = (req, res) => {
 
 
 
-module.exports = { registerUser, userLogin, getDashboard, uploadFile, ally, profile, userHelp, password, resetPassword}
+module.exports = { registerUser, userLogin, getDashboard, uploadFile, ally, profile, userHelp, password, resetPassword }

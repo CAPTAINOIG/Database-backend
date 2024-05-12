@@ -201,65 +201,6 @@ const uploadFile = async (req, res) => {
     //   });
     // });
 
-
-
-  // cloudinary.v2.uploader.upload(fileUpload, (err, response) => { })
-  //   .then((response) => {
-  //     // console.log(response);
-  //     let myimage = response.secure_url;
-  //     console.log(myimage);
-
-  //     userModel.findOneAndUpdate({ email }, { $set: { image: myimage} })
-  //       .then((response) => {
-  //         console.log(response);
-  //         // res.status(200).json({
-  //         //   status: true,
-  //         //   response: updatedUser,
-  //         //   message: 'image uploaded successfully'
-  //         // })
-  //         // res.send({ message: "image uploaded successfully", statue: true, myimage })
-  //       })
-  //       .catch((err) => {
-  //         // console.log(err);
-  //         console.log('cant update');
-  //       })
-
-  //   }).catch((err) => {
-  //     // console.log(err);
-  //     console.log('error');
-  //   })
-
-// }
-
-
-
-// const uploadFile = (req, res) => {
-//   const image = req.body.fileUpload;
-
-//   cloudinary.v2.uploader.upload(image)
-//     .then((response) => {
-//       const myimage = response.secure_url;
-
-//       // Assuming req.body.id is a valid MongoDB ObjectId
-//       userModel.findByIdAndUpdate(req.body.id, { $set: { image: myimage, status: true } }, { new: true })
-//         .then((updatedUser) => {
-//           if (!updatedUser) {
-//             return res.status(404).json({ message: "User not found", status: false });
-//           }
-//           res.status(200).json({ message: "Image uploaded successfully", status: true, myimage, updatedUser });
-//         })
-//         .catch((err) => {
-//           console.log(err);
-//           res.status(500).json({ message: "Error updating user", status: false });
-//         });
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//       res.status(500).json({ message: "Error uploading image to Cloudinary", status: false });
-//     });
-// };
-
-
 const userHelp = (req, res) => {
   let formy = new help(req.body)
   formy.save()

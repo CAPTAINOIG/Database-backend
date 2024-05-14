@@ -28,6 +28,9 @@ const transporter = nodemailer.createTransport({
   }
 })
 
+const Captain =
+  "https://res.cloudinary.com/dbp6ovv7b/image/upload/v1715707545/vppycq4nw3k4xemjauej.jpg";
+
 
 const ally = (req, res) => {
   let form = userModel.find()
@@ -55,11 +58,31 @@ const registerUser = (req, res) => {
     image,
     logo
   })
-  // console.log(user);
+  console.log(newUser);
   newUser.save()
     .then((result) => {
       console.log(result);
       res.status(200).json({ status: true, message: "User signed up successfully", result });
+      console.log('✔ user found', email);
+      const mailOptions = {
+        from: process.env.USER,
+        to: email,
+        subject: "Welcome to Captain College",
+        html: `
+          <div style="background-color: rgb(4,48,64); padding: 20px; color: rgb(179,148,113); border-radius: 5px">
+            <img src="${Captain}" alt="Captain College Logo" style="max-width: 150px; height: 130px; margin-bottom: 20px; margin-left: 300px;">
+            <div style="text-align: center;">
+            <p style="font-size: 18px;">Hello, ${firstName}!</p>
+            <p style="font-size: 16px;">Welcome to Captain College! We're thrilled that you've chosen to register with us.</p>
+            <p style="font-size: 16px;">If you have any questions or need assistance, feel free to reach out @abdullahisamsudeen@gmail.com.</p>
+            <p style="font-size: 16px;">Thank you for joining us.</p>
+            <p style="font-size: 16px;">Best regards,</p>
+            <p style="font-size: 16px;">The Captain College Team</p>
+            </div>
+          </div>
+        `,
+      };
+        return transporter.sendMail(mailOptions)
     })
     .catch((err) => {
       console.error(err);
@@ -149,58 +172,6 @@ const uploadFile = async (req, res) => {
 };
 
 
-
-// const uploadFile = async (req, res) => {
-//   const { email, fileUpload } = req.body
-//   // await userModel.deleteOne({email})
-//   // await userModel.findOne({email})
-//   // console.log(fileUpload);
-//   // .then(msg =>{
-//   console.log(email);
-//   // }).catch(err =>{
-//   //   console.log(err);
-//   // })
-
-
-//   cloudinary.v2.uploader.upload(fileUpload)
-//     .then((response) => {
-//       // Code to handle successful Cloudinary upload
-//       let myimage = response.secure_url;
-//       console.log(myimage);
-
-    //   userModel.findOneAndUpdate({ email }, { $set: { image: myimage } })
-    //     .then((updatedUser) => {
-    //       // Code to handle successful update of user model
-    //       console.log(updatedUser);
-    //       // Send a response to the client if needed
-    //       res.status(200).json({
-    //         status: true,
-    //         response: updatedUser,
-    //         message: 'Image uploaded successfully'
-    //       });
-    //     }).catch((err) => {
-    //       // Code to handle Cloudinary upload or update error
-    //       console.log(err);
-    //       console.log('Error in Cloudinary upload or user model update');
-    //       // Send an error response to the client if needed
-    //       res.status(500).json({
-    //         status: false,
-    //         message: 'Error in Cloudinary upload or user model update',
-    //         error: err.message
-    //       });
-    //     });
-    // }).catch((err) => {
-    //   // Code to handle Cloudinary upload or update error
-    //   console.log(err);
-    //   console.log('Error in Cloudinary upload or user model update');
-    //   // Send an error response to the client if needed
-    //   res.status(500).json({
-    //     status: false,
-    //     message: 'Error in Cloudinary upload or user model update',
-    //     error: err.message
-    //   });
-    // });
-
 const userHelp = (req, res) => {
   let formy = new help(req.body)
   formy.save()
@@ -229,6 +200,7 @@ const profile = ((req, res) => {
 
 const password = (req, res) => {
   const { email } = req.body;
+  console.log(email);
   const resetToken = generating();
   const expirationDate = new Date();
   expirationDate.setHours(expirationDate.getHours() + 24); // Token expires in 24 hours

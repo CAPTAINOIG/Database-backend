@@ -29,7 +29,7 @@ const transporter = nodemailer.createTransport({
 })
 
 const Captain =
-  "https://res.cloudinary.com/dbp6ovv7b/image/upload/v1715707545/vppycq4nw3k4xemjauej.jpg";
+  "https://res.cloudinary.com/dbp6ovv7b/image/upload/v1715783819/tvf5apwj5bwmwf2qjfhh.png";
 
 
 const ally = (req, res) => {

@@ -254,8 +254,8 @@ const resetPassword = (req, res) => {
 
   if (!email || !otp || !newPassword) {
     return res.status(400).json({ message: 'Missing required data' });
-    console.log('missig data');
   }
+  console.log('missig data');
   console.log(email, otp, newPassword);
 
   userModel.findOne({ email, otp })

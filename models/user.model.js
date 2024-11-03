@@ -10,7 +10,7 @@ let newSchema = new mongoose.Schema({
     dob: {type: String, required:true},
     matric: {type:String, required:true},
     image: {type:String, default:""},
-    otp: {type:Number},
+    otp: { type: Number, default: null },
     logo: {type:String},
     date: {type: Date, default: Date.now()} 
 })
